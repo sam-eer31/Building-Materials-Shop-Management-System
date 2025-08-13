@@ -46,7 +46,7 @@ Before running this system, ensure you have:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/sam-eer31/Building-Materials-Shop-Management-System)
 cd building-materials-shop
 ```
 
@@ -296,3 +296,4 @@ To update the system:
 **Built with ❤️ for building materials businesses**
 
 *This system is designed to be simple yet powerful, helping you manage your building materials shop efficiently and grow your business.*
+
