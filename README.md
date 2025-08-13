@@ -57,36 +57,64 @@ A comprehensive, modern web-based management system designed specifically for bu
    cd building-materials-shop
    ```
 
-2. **Set up the database**
-   ```sql
-   CREATE DATABASE building_materials_shop;
-   ```
-
-3. **Configure the application**
+2. **Configure the application**
    - Edit `config.py` to update database connection details
    - Update the `SQLALCHEMY_DATABASE_URI` with your MySQL credentials
+   - Ensure your MySQL user has CREATE DATABASE privileges
 
-4. **Install dependencies**
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-5. **Initialize the database**
+4. **Start the application**
    ```bash
    python app.py
    ```
-   The application will automatically create all necessary tables and a default admin user.
+   The application will automatically create the database, all necessary tables, a default admin user, and insert sample data.
 
-6. **Start the application**
-   ```bash
-   python app.py
-   ```
-
-7. **Access the application**
+5. **Access the application**
    - Open your browser and go to `http://localhost:5000`
    - Login with default credentials:
      - **Username**: `admin`
      - **Password**: `admin123`
+
+## 🗄️ Database Management
+
+### Automatic Initialization
+When you start the application for the first time, it automatically:
+- **Creates the database** if it doesn't exist (MySQL/SQLite)
+- Creates all database tables
+- Creates a default admin user (username: `admin`, password: `admin123`)
+- Inserts sample data including:
+  - 8 sample products (Portland Cement, Red Bricks, River Sand, etc.)
+  - 3 sample customers (ABC Construction, XYZ Builders, City Developers)
+
+### Manual Database Operations
+You can also manually manage the database using these endpoints:
+
+- **Create Database**: `GET /create-database` - Creates the database if it doesn't exist
+- **Recreate Database**: `GET /recreate-db` - Drops all tables and recreates them with sample data
+- **Insert Sample Data**: `GET /insert-sample-data` - Adds sample data to existing database
+- **Create Admin User**: `GET /create-admin` - Creates default admin user
+
+### Sample Data Included
+The system comes with realistic sample data for a building materials shop:
+
+**Products:**
+- Portland Cement: ₹350/bag (100 bags in stock)
+- Red Bricks: ₹12/piece (5000 pieces in stock)
+- River Sand: ₹1200/truck (20 trucks in stock)
+- Steel Rods 12mm: ₹450/piece (200 pieces in stock)
+- Steel Rods 16mm: ₹650/piece (150 pieces in stock)
+- Crushed Stone: ₹800/truck (15 trucks in stock)
+- White Cement: ₹450/bag (50 bags in stock)
+- Concrete Blocks: ₹25/piece (1000 pieces in stock)
+
+**Customers:**
+- ABC Construction: 0123456789
+- XYZ Builders: 0987654321
+- City Developers: 0555666777
 
 ### Windows Quick Start
 For Windows users, simply double-click the `start.bat` file to automatically set up and run the application.
@@ -135,6 +163,16 @@ Update the database connection in `config.py`:
 ```python
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://username:password@localhost/building_materials_shop'
 ```
+
+**Supported Databases:**
+- **MySQL/MariaDB**: The application will automatically create the database if it doesn't exist
+- **SQLite**: Database file will be created automatically
+- **PostgreSQL**: Manual database creation required
+
+**Database Requirements:**
+- MySQL 5.7+ or MariaDB 10.2+
+- UTF8MB4 character set support
+- User must have CREATE DATABASE privileges
 
 ## 🔧 API Endpoints
 
