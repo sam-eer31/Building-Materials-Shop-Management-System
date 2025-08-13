@@ -48,7 +48,6 @@ A comprehensive, modern web-based management system designed specifically for bu
 ### Prerequisites
 - Python 3.8 or higher
 - MySQL 8.0 or higher
-- Git
 
 ### Installation
 
