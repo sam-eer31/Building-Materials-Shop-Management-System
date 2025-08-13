@@ -27,7 +27,7 @@ A comprehensive, modern web-based management system designed specifically for bu
 ### 🌐 Multi-Language Support
 - **English** (Default)
 - **हिंदी** (Hindi)
-- **اردو** (Urdu)
+- Urdu
 - Easy language switching with persistent preferences
 
 ### 🎨 Modern User Interface
