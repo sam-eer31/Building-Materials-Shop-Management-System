@@ -4,7 +4,7 @@ from datetime import timedelta
 class Config:
     """Base configuration class"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-change-this-in-production'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:1458@localhost/building_materials_shop'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://your_username:your_password@localhost/building_materials_shop'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Session configuration
