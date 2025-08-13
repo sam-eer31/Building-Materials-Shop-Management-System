@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('dashboard') }} - {{ t('app_name') }}{% endblock %}
+{% block page_title %}{{ t('dashboard') }}{% endblock %}
+
+{% block content %}
+<div class="row fade-in">
+    <!-- Statistics Cards -->
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ total_customers }}</h3>
+                    <p>{{ t('total_customers') }}</p>
+                </div>
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ total_products }}</h3>
+                    <p>{{ t('total_products') }}</p>
+                </div>
+                <i class="fas fa-boxes"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>₹{{ "%.2f"|format(monthly_sales) }}</h3>
+                    <p>{{ t('monthly_sales') }}</p>
+                </div>
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>₹{{ "%.2f"|format(pending_amount) }}</h3>
+                    <p>{{ t('pending_payments') }}</p>
+                </div>
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ orders_placed_today }}</h3>
+                    <p>{{ t('orders_received_today') }}</p>
+                </div>
+                <i class="fas fa-calendar-day"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row slide-up">
+    <!-- Low Stock Alert -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle text-warning me-3"></i>
+                <h5 class="mb-0 fw-bold">{{ t('low_stock_alert') }}</h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock_products %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase small fw-bold">{{ t('product') }}</th>
+                                    <th class="text-uppercase small fw-bold">{{ t('current_stock') }}</th>
+                                    <th class="text-uppercase small fw-bold">{{ t('unit') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock_products %}
+                                <tr>
+                                    <td class="fw-medium">{{ product.name }}</td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ product.stock_quantity }}</span>
+                                    </td>
+                                    <td class="text-muted">{{ product.unit }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-success fw-medium mb-0">{{ t('all_products_sufficient_stock') }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-bolt text-primary me-3"></i>
+                <h5 class="mb-0 fw-bold">{{ t('quick_actions') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{{ url_for('customers') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <span class="fw-medium">{{ t('add_customer') }}</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('products') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-box fa-2x mb-2"></i>
+                            <span class="fw-medium">{{ t('add_product') }}</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('orders') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <span class="fw-medium">{{ t('new_order') }}</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('reports') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                            <span class="fw-medium">{{ t('view_reports') }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row slide-up">
+    <!-- Pending Deliveries -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-truck text-warning me-3"></i>
+                    <h5 class="mb-0 fw-bold">{{ t('pending_deliveries') }}</h5>
+                </div>
+                <a href="{{ url_for('orders') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-list me-2"></i>{{ t('view_all_orders') }}
+                </a>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Orders scheduled for delivery today and tomorrow</p>
+                <div id="pending-deliveries-container">
+                    <div class="text-center py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">{{ t('loading') }}</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">{{ t('loading_pending_deliveries') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Pass translations to JavaScript
+const translations = {
+    order_id: '{{ t("order_id") }}',
+    customer: '{{ t("customer") }}',
+    order_date: '{{ t("order_date") }}',
+    delivery_date: '{{ t("delivery_date") }}',
+    amount: '{{ t("amount") }}',
+    payment_status: '{{ t("payment_status") }}',
+    delivery_address: '{{ t("delivery_address") }}',
+    actions: '{{ t("actions") }}',
+    today: '{{ t("today") }}',
+    tomorrow: '{{ t("tomorrow") }}',
+    other: '{{ t("other") }}',
+    not_specified: '{{ t("not_specified") }}',
+    view_order_details: '{{ t("view_order_details") }}',
+    generate_invoice: '{{ t("generate_invoice") }}',
+    no_pending_deliveries: '{{ t("no_pending_deliveries") }}',
+    failed_to_load_deliveries: '{{ t("failed_to_load_deliveries") }}',
+    paid: '{{ t("paid") }}',
+    unpaid: '{{ t("unpaid") }}',
+    partial: '{{ t("partial") }}'
+};
+
+$(document).ready(function() {
+    // Load pending deliveries
+    loadPendingDeliveries();
+    
+    function loadPendingDeliveries() {
+        $.get('/api/dashboard/pending-deliveries')
+            .done(function(data) {
+                if (data.length > 0) {
+                    let html = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase small fw-bold">${translations.order_id}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.customer}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.order_date}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.delivery_date}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.amount}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.payment_status}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.delivery_address}</th>
+                                        <th class="text-uppercase small fw-bold">${translations.actions}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.forEach(order => {
+                        const statusClass = order.payment_status === 'Paid' ? 'success' : 
+                                          order.payment_status === 'Partial' ? 'warning' : 'danger';
+                        
+                        // Translate payment status
+                        let statusText = order.payment_status;
+                        if (order.payment_status === 'Paid') {
+                            statusText = translations.paid;
+                        } else if (order.payment_status === 'Unpaid') {
+                            statusText = translations.unpaid;
+                        } else if (order.payment_status === 'Partial') {
+                            statusText = translations.partial;
+                        }
+                        
+                        // Get current date in local timezone
+                        const now = new Date();
+                        const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                        const tomorrowStr = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');
+                        
+                        const deliveryDate = order.delivery_date;
+                        let deliveryBadgeClass, deliveryBadgeText;
+                        
+                        if (deliveryDate === today) {
+                            deliveryBadgeClass = 'bg-danger';
+                            deliveryBadgeText = translations.today;
+                        } else if (deliveryDate === tomorrowStr) {
+                            deliveryBadgeClass = 'bg-warning';
+                            deliveryBadgeText = translations.tomorrow;
+                        } else {
+                            deliveryBadgeClass = 'bg-info';
+                            deliveryBadgeText = translations.other;
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td class="fw-bold">#${order.id}</td>
+                                <td class="fw-medium">${order.customer_name}</td>
+                                <td class="text-muted">${order.order_date}</td>
+                                <td>
+                                    <span class="badge ${deliveryBadgeClass} mb-1">${deliveryBadgeText}</span>
+                                    <br><small class="text-muted">${order.delivery_date}</small>
+                                </td>
+                                <td class="fw-bold">₹${order.total_amount.toFixed(2)}</td>
+                                <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                                <td>
+                                    <small class="text-muted">
+                                        ${order.delivery_address ? order.delivery_address.substring(0, 50) + '...' : translations.not_specified}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-info view-order" 
+                                                data-order-id="${order.id}" title="${translations.view_order_details}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="/invoice/${order.id}" class="btn btn-sm btn-outline-primary" title="${translations.generate_invoice}">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    $('#pending-deliveries-container').html(html);
+                    
+                    // Set up event handlers for the newly generated view order buttons
+                    setupViewOrderHandlers();
+                    
+                    // Debug: Check if buttons are generated
+                    console.log('Generated view order buttons:', $('.view-order').length);
+                    console.log('Generated HTML:', html);
+                } else {
+                    $('#pending-deliveries-container').html(`
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p class="text-success fw-medium mb-0">${translations.no_pending_deliveries}</p>
+                        </div>
+                    `);
+                }
+            })
+            .fail(function() {
+                $('#pending-deliveries-container').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${translations.failed_to_load_deliveries}
+                    </div>
+                `);
+            });
+    }
+    
+    // Auto-refresh dashboard every 30 seconds
+    setInterval(loadPendingDeliveries, 30000);
+    
+    // View order functionality
+    function setupViewOrderHandlers() {
+        console.log('Setting up view order handlers...');
+        
+        // Remove any existing handlers first
+        $(document).off('click', '.view-order');
+        
+        // Set up new handlers for view order buttons
+        $(document).on('click', '.view-order', function() {
+            console.log('View order button clicked!');
+            const orderId = $(this).data('order-id');
+            console.log('Order ID:', orderId);
+            loadOrderDetails(orderId);
+        });
+        
+        console.log('View order handlers set up successfully');
+    }
+    
+    function loadOrderDetails(orderId) {
+        console.log('Loading order details for ID:', orderId);
+        
+        // Get the complete order data with items from the orders API
+        $.get('/api/orders')
+            .done(function(data) {
+                const order = data.find(o => o.id == orderId);
+                if (order) {
+                    let html = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-3">Order Information</h6>
+                                <div class="mb-3">
+                                    <label class="small text-muted fw-medium">Order ID</label>
+                                    <p class="fw-bold mb-0">#${order.id}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small text-muted fw-medium">Customer</label>
+                                    <p class="fw-bold mb-0">${order.customer_name}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small text-muted fw-medium">Order Date</label>
+                                    <p class="fw-bold mb-0">${order.order_date}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small text-muted fw-medium">Delivery Date</label>
+                                    <p class="fw-bold mb-0">${order.delivery_date || 'Not specified'}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small text-muted fw-medium">Payment Status</label>
+                                    <p class="mb-0">
+                                        <span class="badge ${order.payment_status === 'Paid' ? 'bg-success' : order.payment_status === 'Partial' ? 'bg-warning' : 'bg-danger'}">
+                                            ${order.payment_status}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-3">Order Items</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase small fw-bold">Product</th>
+                                                <th class="text-uppercase small fw-bold">Quantity</th>
+                                                <th class="text-uppercase small fw-bold">Price</th>
+                                                <th class="text-uppercase small fw-bold">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    order.items.forEach(item => {
+                        html += `
+                            <tr>
+                                <td class="fw-medium">${item.product_name}</td>
+                                <td>${item.quantity}</td>
+                                <td>₹${item.price.toFixed(2)}</td>
+                                <td class="fw-bold">₹${(item.price * item.quantity).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-primary">
+                                                <th colspan="3" class="fw-bold">Total Amount</th>
+                                                <th class="fw-bold">₹${order.total_amount.toFixed(2)}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('#viewOrderContent').html(html);
+                    $('#viewOrderModal').modal('show');
+                }
+            })
+            .fail(function() {
+                showAlert('Failed to load order details.', 'danger');
+            });
+    }
+    
+    function showAlert(message, type) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+        `;
+        
+        // Show alert at the top of the page
+        $('body').prepend(alertHtml);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            $('.alert').fadeOut();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

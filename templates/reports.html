@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('reports') }} - {{ t('app_name') }}{% endblock %}
+{% block page_title %}{{ t('sales_report') }} & Analytics{% endblock %}
+
+{% block content %}
+<!-- Report Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+                    <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                {{ t('filter') }}
+            </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="startDate" class="form-label">{{ t('start_date') }}</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+            <div class="col-md-3">
+                <label for="endDate" class="form-label">{{ t('end_date') }}</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+            <div class="col-md-3">
+                <label for="reportType" class="form-label">{{ t('report_type') }}</label>
+                <select class="form-select" id="reportType">
+                    <option value="sales">{{ t('sales_report') }}</option>
+                    <option value="customers">{{ t('customer_report') }}</option>
+                    <option value="products">{{ t('product_report') }}</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary me-2" id="generateReportBtn">
+                    <i class="fas fa-chart-bar me-2"></i>{{ t('generate_report') }}
+                </button>
+                <button class="btn btn-success" id="exportCsvBtn">
+                    <i class="fas fa-download me-2"></i>{{ t('export_report') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Summary Cards -->
+<div class="row mb-4" id="reportSummary" style="display: none;">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 id="totalSales">₹0.00</h4>
+                <p class="mb-0">{{ t('total_sales') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4 id="totalOrders">0</h4>
+                <p class="mb-0">{{ t('total_orders') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4 id="totalCustomers">0</h4>
+                <p class="mb-0">{{ t('unique_customers') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <h4 id="avgOrderValue">₹0.00</h4>
+                <p class="mb-0">{{ t('average_order_value') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card">
+    <div class="card-header">
+                    <h5 class="mb-0">
+                <i class="fas fa-table me-2"></i>
+                {{ t('report_results') }}
+            </h5>
+    </div>
+    <div class="card-body">
+        <div id="reportContent">
+            <div class="text-center text-muted">
+                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                <p>{{ t('select_date_range_generate') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reports -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    {{ t('quick_reports') }}
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary quick-report" data-period="today">
+                        <i class="fas fa-calendar-day me-2"></i>{{ t('today_sales') }}
+                    </button>
+                    <button class="btn btn-outline-primary quick-report" data-period="week">
+                        <i class="fas fa-calendar-week me-2"></i>{{ t('this_week_sales') }}
+                    </button>
+                    <button class="btn btn-outline-primary quick-report" data-period="month">
+                        <i class="fas fa-calendar-alt me-2"></i>{{ t('this_month_sales') }}
+                    </button>
+                    <button class="btn btn-outline-primary quick-report" data-period="quarter">
+                        <i class="fas fa-calendar-check me-2"></i>This Quarter
+                    </button>
+                    <button class="btn btn-outline-primary quick-report" data-period="year">
+                        <i class="fas fa-calendar-year me-2"></i>This Year
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    {{ t('top_performers') }}
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="topPerformers">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                        <p>{{ t('generate_report_see_top_performers') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Pass translations to JavaScript
+const translations = {
+    rank: '{{ t("rank") }}',
+    customer_name: '{{ t("customer_name") }}',
+    product_name: '{{ t("product_name") }}',
+    sales_amount: '{{ t("sales_amount") }}',
+    order_count: '{{ t("order_count") }}',
+    stock_level: '{{ t("stock_level") }}',
+    revenue: '{{ t("revenue") }}',
+    profit: '{{ t("profit") }}',
+    margin: '{{ t("margin") }}',
+    paid: '{{ t("paid") }}',
+    unpaid: '{{ t("unpaid") }}',
+    partial: '{{ t("partial") }}',
+    top_customers: '{{ t("top_customers") }}',
+    top_products: '{{ t("top_products") }}',
+    low_stock_products: '{{ t("low_stock_products") }}',
+    please_select_dates: '{{ t("please_select_dates") }}',
+    start_date_after_end: '{{ t("start_date_after_end") }}',
+    generating_report: '{{ t("generating_report") }}',
+    loading: '{{ t("loading") }}',
+    generate_report_see_top_performers: '{{ t("generate_report_see_top_performers") }}'
+};
+$(document).ready(function() {
+    let currentReportData = [];
+    
+    // Set default dates (current month)
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    $('#startDate').val(firstDay.toISOString().split('T')[0]);
+    $('#endDate').val(lastDay.toISOString().split('T')[0]);
+    
+    // Generate report
+    $('#generateReportBtn').click(function() {
+        generateReport();
+    });
+    
+    // Export CSV
+    $('#exportCsvBtn').click(function() {
+        exportToCSV();
+    });
+    
+    // Quick reports
+    $('.quick-report').click(function() {
+        const period = $(this).data('period');
+        setQuickReportDates(period);
+        generateReport();
+    });
+    
+    function setQuickReportDates(period) {
+        const today = new Date();
+        let startDate, endDate;
+        
+        switch(period) {
+            case 'today':
+                startDate = today;
+                endDate = today;
+                break;
+            case 'week':
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay());
+                startDate = startOfWeek;
+                endDate = today;
+                break;
+            case 'month':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                break;
+            case 'quarter':
+                const quarter = Math.floor(today.getMonth() / 3);
+                startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                endDate = new Date(today.getFullYear(), (quarter + 1) * 3, 0);
+                break;
+            case 'year':
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = new Date(today.getFullYear(), 11, 31);
+                break;
+        }
+        
+        $('#startDate').val(startDate.toISOString().split('T')[0]);
+        $('#endDate').val(endDate.toISOString().split('T')[0]);
+    }
+    
+    function generateReport() {
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        const reportType = $('#reportType').val();
+        
+        if (!startDate || !endDate) {
+            showAlert(translations.please_select_dates, 'danger');
+            return;
+        }
+        
+        if (new Date(startDate) > new Date(endDate)) {
+            showAlert(translations.start_date_after_end, 'danger');
+            return;
+        }
+        
+        // Show loading
+        $('#reportContent').html(`
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">${translations.loading}</span>
+                </div>
+                <p class="mt-2">${translations.generating_report}</p>
+            </div>
+        `);
+        
+        $.get('/api/reports/sales', { start_date: startDate, end_date: endDate })
+            .done(function(data) {
+                currentReportData = data;
+                displayReport(data);
+                updateReportSummary(data);
+                updateTopPerformers(data);
+                $('#reportSummary').show();
+            })
+            .fail(function() {
+                $('#reportContent').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Failed to generate report. Please try again.
+                    </div>
+                `);
+            });
+    }
+    
+    function displayReport(data) {
+        if (data.length === 0) {
+            $('#reportContent').html(`
+                <div class="text-center text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>{{ t('no_reports_data') }}</p>
+                </div>
+            `);
+            return;
+        }
+        
+        let html = `
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ t('order_id') }}</th>
+                            <th>{{ t('order_date') }}</th>
+                            <th>{{ t('customer') }}</th>
+                            <th>{{ t('product') }}</th>
+                            <th>{{ t('quantity') }}</th>
+                            <th>{{ t('price') }}</th>
+                            <th>{{ t('total') }}</th>
+                            <th>{{ t('payment_status') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.forEach(item => {
+            const statusClass = item.payment_status === 'Paid' ? 'success' : 
+                              item.payment_status === 'Partial' ? 'warning' : 'danger';
+            const statusText = item.payment_status === 'Paid' ? translations.paid : 
+                              item.payment_status === 'Partial' ? translations.partial : translations.unpaid;
+            
+            html += `
+                <tr>
+                    <td>#${item.order_id}</td>
+                    <td>${item.date}</td>
+                    <td>${item.customer}</td>
+                    <td>${item.product}</td>
+                    <td>${item.quantity}</td>
+                    <td>₹${item.price.toFixed(2)}</td>
+                    <td>₹${item.total.toFixed(2)}</td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        $('#reportContent').html(html);
+    }
+    
+    function updateReportSummary(data) {
+        if (data.length === 0) {
+            $('#totalSales').text('$0.00');
+            $('#totalOrders').text('0');
+            $('#totalCustomers').text('0');
+            $('#avgOrderValue').text('$0.00');
+            return;
+        }
+        
+        const totalSales = data.reduce((sum, item) => sum + item.total, 0);
+        const uniqueOrders = new Set(data.map(item => item.order_id));
+        const uniqueCustomers = new Set(data.map(item => item.customer));
+        const avgOrderValue = totalSales / uniqueOrders.size;
+        
+        $('#totalSales').text(`₹${totalSales.toFixed(2)}`);
+        $('#totalOrders').text(uniqueOrders.size);
+        $('#totalCustomers').text(uniqueCustomers.size);
+        $('#avgOrderValue').text(`₹${avgOrderValue.toFixed(2)}`);
+    }
+    
+    function updateTopPerformers(data) {
+        if (data.length === 0) {
+            $('#topPerformers').html(`
+                <div class="text-center text-muted">
+                    <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                    <p>No data available</p>
+                </div>
+            `);
+            return;
+        }
+        
+        // Top customers by sales
+        const customerSales = {};
+        data.forEach(item => {
+            if (!customerSales[item.customer]) {
+                customerSales[item.customer] = 0;
+            }
+            customerSales[item.customer] += item.total;
+        });
+        
+        const topCustomers = Object.entries(customerSales)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5);
+        
+        // Top products by quantity
+        const productSales = {};
+        data.forEach(item => {
+            if (!productSales[item.product]) {
+                productSales[item.product] = 0;
+            }
+            productSales[item.product] += item.quantity;
+        });
+        
+        const topProducts = Object.entries(productSales)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5);
+        
+        let html = `
+            <div class="row">
+                <div class="col-6">
+                    <h6 class="text-primary">${translations.top_customers}</h6>
+                    <ul class="list-unstyled">
+        `;
+        
+        topCustomers.forEach(([customer, sales]) => {
+            html += `<li><small>${customer}: ₹${sales.toFixed(2)}</small></li>`;
+        });
+        
+        html += `
+                    </ul>
+                </div>
+                <div class="col-6">
+                    <h6 class="text-success">${translations.top_products}</h6>
+                    <ul class="list-unstyled">
+        `;
+        
+        topProducts.forEach(([product, quantity]) => {
+            html += `<li><small>${product}: ${quantity} units</small></li>`;
+        });
+        
+        html += `
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        $('#topPerformers').html(html);
+    }
+    
+    function exportToCSV() {
+        if (currentReportData.length === 0) {
+            showAlert('No data to export. Please generate a report first.', 'warning');
+            return;
+        }
+        
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        
+        const url = `/api/reports/export-csv?start_date=${startDate}&end_date=${endDate}`;
+        window.location.href = url;
+    }
+    
+
+});
+</script>
+{% endblock %}

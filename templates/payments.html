@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('payments') }} - {{ t('app_name') }}{% endblock %}
+{% block page_title %}{{ t('payment_management') }}{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+    <i class="fas fa-plus me-2"></i>{{ t('add_payment') }}
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Payment Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 id="totalOutstanding">₹0.00</h4>
+                <p class="mb-0">{{ t('total_outstanding') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4 id="totalPaid">₹0.00</h4>
+                <p class="mb-0">{{ t('total_paid') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <h4 id="totalPartial">₹0.00</h4>
+                <p class="mb-0">{{ t('partial_payments') }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4 id="totalCustomers">0</h4>
+                <p class="mb-0">{{ t('customers_with_debt') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Outstanding Orders -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ t('outstanding_orders') }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="outstandingOrdersTable">
+                <thead>
+                    <tr>
+                        <th>{{ t('order_id') }}</th>
+                        <th>{{ t('customer') }}</th>
+                        <th>{{ t('order_date') }}</th>
+                        <th>{{ t('total_amount') }}</th>
+                        <th>{{ t('paid_amount') }}</th>
+                        <th>{{ t('outstanding') }}</th>
+                        <th>{{ t('status') }}</th>
+                        <th>{{ t('actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="outstandingOrdersBody">
+                    <!-- Outstanding orders will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- All Orders with Payment Status -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            {{ t('all_orders_payment_status') }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="allOrdersTable">
+                <thead>
+                    <tr>
+                        <th>{{ t('order_id') }}</th>
+                        <th>{{ t('customer') }}</th>
+                        <th>{{ t('order_date') }}</th>
+                        <th>{{ t('total_amount') }}</th>
+                        <th>{{ t('paid_amount') }}</th>
+                        <th>{{ t('outstanding') }}</th>
+                        <th>{{ t('status') }}</th>
+                        <th>{{ t('actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="allOrdersTableBody">
+                    <!-- All orders will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i>
+            {{ t('payment_history') }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th>{{ t('payment_id') }}</th>
+                        <th>{{ t('order_id') }}</th>
+                        <th>{{ t('customer') }}</th>
+                        <th>{{ t('payment_date') }}</th>
+                        <th>{{ t('amount') }}</th>
+                        <th>{{ t('payment_method') }}</th>
+                        <th>{{ t('notes') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentsTableBody">
+                    <!-- Payment history will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ t('record_payment') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPaymentForm">
+                    <div class="mb-3">
+                        <label for="paymentOrder" class="form-label">{{ t('select_order') }} *</label>
+                        <select class="form-select" id="paymentOrder" required>
+                            <option value="">{{ t('select_order') }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentAmount" class="form-label">{{ t('payment_amount') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="paymentAmount" step="0.01" min="0" required>
+                        </div>
+                        <small class="text-muted">
+                            Outstanding Amount: <span id="outstandingAmount">₹0.00</span>
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentDate" class="form-label">{{ t('payment_date') }} *</label>
+                        <input type="date" class="form-control" id="paymentDate" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">{{ t('payment_method') }}</label>
+                        <select class="form-select" id="paymentMethod">
+                            <option value="Cash">{{ t('cash') }}</option>
+                            <option value="Bank Transfer">{{ t('bank_transfer') }}</option>
+                            <option value="Check">{{ t('cheque') }}</option>
+                            <option value="Credit Card">{{ t('upi') }}</option>
+                            <option value="Other">{{ t('other') }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentNotes" class="form-label">{{ t('notes') }}</label>
+                        <textarea class="form-control" id="paymentNotes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="savePaymentBtn">
+                    <i class="fas fa-save me-2"></i>{{ t('record_payment') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    let allOrders = [];
+    let payments = [];
+    
+    // Set default payment date to today
+    $('#paymentDate').val(new Date().toISOString().split('T')[0]);
+    
+    // Load data on page load
+    loadAllOrders();
+    loadPayments();
+    
+    // Order selection change
+    $('#paymentOrder').change(function() {
+        const selectedOrderId = $(this).val();
+        if (selectedOrderId) {
+            const order = outstandingOrders.find(o => o.id == selectedOrderId);
+            if (order) {
+                const outstanding = order.total_amount - order.paid_amount;
+                $('#outstandingAmount').text(`₹${outstanding.toFixed(2)}`);
+                $('#paymentAmount').attr('max', outstanding);
+            }
+        } else {
+                            $('#outstandingAmount').text('₹0.00');
+            $('#paymentAmount').removeAttr('max');
+        }
+    });
+    
+    // Record payment
+    $('#savePaymentBtn').click(function() {
+        const paymentData = {
+            order_id: parseInt($('#paymentOrder').val()),
+            amount: parseFloat($('#paymentAmount').val()),
+            payment_date: $('#paymentDate').val(),
+            payment_method: $('#paymentMethod').val(),
+            notes: $('#paymentNotes').val()
+        };
+        
+        if (!paymentData.order_id || isNaN(paymentData.amount) || paymentData.amount <= 0) {
+            showAlert('Please fill in all required fields with valid values.', 'danger');
+            return;
+        }
+        
+        $.ajax({
+            url: '/api/payments',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(paymentData),
+            success: function(response) {
+                showAlert('Payment recorded successfully!', 'success');
+                $('#addPaymentModal').modal('hide');
+                $('#addPaymentForm')[0].reset();
+                $('#paymentDate').val(new Date().toISOString().split('T')[0]);
+                loadAllOrders();
+                loadPayments();
+            },
+            error: function(xhr) {
+                const error = xhr.responseJSON?.error || 'Failed to record payment.';
+                showAlert(error, 'danger');
+            }
+        });
+    });
+    
+    function loadAllOrders() {
+        $.get('/api/orders')
+            .done(function(data) {
+                allOrders = data;
+                
+                // Filter outstanding orders for dropdown
+                const outstandingOrders = data.filter(order => order.payment_status !== 'Paid');
+                
+                // Populate order dropdown
+                let options = '<option value="">Select Order</option>';
+                outstandingOrders.forEach(order => {
+                    const outstanding = order.total_amount - (order.paid_amount || 0);
+                    options += `<option value="${order.id}">#${order.id} - ${order.customer_name} (Outstanding: ₹${outstanding.toFixed(2)})</option>`;
+                });
+                $('#paymentOrder').html(options);
+                
+                renderAllOrdersTable(allOrders);
+                renderOutstandingOrdersTable(outstandingOrders);
+                updatePaymentSummary();
+            })
+            .fail(function() {
+                showAlert('Failed to load orders.', 'danger');
+            });
+    }
+    
+    function loadPayments() {
+        $.get('/api/payments')
+            .done(function(data) {
+                payments = data;
+                renderPaymentsTable(payments);
+                updatePaymentSummary();
+            })
+            .fail(function() {
+                showAlert('Failed to load payments.', 'danger');
+            });
+    }
+    
+    function renderAllOrdersTable(orders) {
+        if (orders.length === 0) {
+            $('#allOrdersTableBody').html(`
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-list fa-3x mb-3"></i>
+                            <p class="mb-0">{{ t('no_orders_found') }}</p>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        orders.forEach(order => {
+            const paidAmount = order.paid_amount || 0;
+            const outstanding = order.total_amount - paidAmount;
+            
+            let statusBadge = '';
+            if (order.payment_status === 'Paid') {
+                statusBadge = '<span class="badge bg-success">Paid</span>';
+            } else if (order.payment_status === 'Partial') {
+                statusBadge = '<span class="badge bg-warning">Partial</span>';
+            } else {
+                statusBadge = '<span class="badge bg-danger">Unpaid</span>';
+            }
+            
+            let actionButton = '';
+            if (order.payment_status !== 'Paid') {
+                actionButton = `
+                    <button class="btn btn-sm btn-outline-primary record-payment" 
+                            data-order-id="${order.id}"
+                            data-outstanding="${outstanding}">
+                        <i class="fas fa-credit-card me-1"></i>Pay
+                    </button>
+                `;
+            } else {
+                actionButton = '<span class="text-muted">Fully Paid</span>';
+            }
+            
+            html += `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.customer_name}</td>
+                    <td>${order.order_date}</td>
+                    <td>₹${order.total_amount.toFixed(2)}</td>
+                    <td>₹${paidAmount.toFixed(2)}</td>
+                    <td>₹${outstanding.toFixed(2)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionButton}</td>
+                </tr>
+            `;
+        });
+        $('#allOrdersTableBody').html(html);
+    }
+    
+    function renderPaymentsTable(payments) {
+        if (payments.length === 0) {
+            $('#paymentsTableBody').html(`
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p class="mb-0">{{ t('no_payment_history') }}</p>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        payments.forEach(payment => {
+            html += `
+                <tr>
+                    <td>${payment.id}</td>
+                    <td>#${payment.order_id}</td>
+                    <td>${payment.customer_name}</td>
+                    <td>${payment.payment_date}</td>
+                    <td>₹${payment.amount.toFixed(2)}</td>
+                    <td>${payment.payment_method}</td>
+                    <td>${payment.notes || '-'}</td>
+                </tr>
+            `;
+        });
+        $('#paymentsTableBody').html(html);
+    }
+    
+    function renderOutstandingOrdersTable(orders) {
+        if (orders.length === 0) {
+            $('#outstandingOrdersBody').html(`
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <p class="mb-0">{{ t('no_outstanding_orders') }}</p>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        orders.forEach(order => {
+            const paidAmount = order.paid_amount || 0;
+            const outstanding = order.total_amount - paidAmount;
+            
+            html += `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.customer_name}</td>
+                    <td>${order.order_date}</td>
+                    <td>₹${order.total_amount.toFixed(2)}</td>
+                    <td>₹${paidAmount.toFixed(2)}</td>
+                    <td>₹${outstanding.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${order.payment_status === 'Partial' ? 'bg-warning' : 'bg-danger'}">
+                            ${order.payment_status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary record-payment" 
+                                data-order-id="${order.id}"
+                                data-outstanding="${outstanding}">
+                            <i class="fas fa-credit-card me-1"></i>Pay
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        $('#outstandingOrdersBody').html(html);
+    }
+    
+    function updatePaymentSummary() {
+        let totalOutstanding = 0;
+        let totalPaid = 0;
+        let totalPartial = 0;
+        let customersWithDebt = new Set();
+        
+        allOrders.forEach(order => {
+            const paidAmount = order.paid_amount || 0;
+            const outstanding = order.total_amount - paidAmount;
+            
+            if (order.payment_status === 'Paid') {
+                totalPaid += order.total_amount;
+            } else if (outstanding > 0) {
+                totalOutstanding += outstanding;
+                customersWithDebt.add(order.customer_name);
+                
+                if (paidAmount > 0) {
+                    totalPartial += outstanding;
+                }
+            }
+        });
+        
+        $('#totalOutstanding').text(`₹${totalOutstanding.toFixed(2)}`);
+        $('#totalPaid').text(`₹${totalPaid.toFixed(2)}`);
+        $('#totalPartial').text(`₹${totalPartial.toFixed(2)}`);
+        $('#totalCustomers').text(customersWithDebt.size);
+    }
+    
+    // Quick payment from outstanding orders table
+    $(document).on('click', '.record-payment', function() {
+        const orderId = $(this).data('order-id');
+        const outstanding = $(this).data('outstanding');
+        
+        $('#paymentOrder').val(orderId);
+        $('#paymentAmount').val(outstanding.toFixed(2));
+        $('#outstandingAmount').text(`$${outstanding.toFixed(2)}`);
+        
+        $('#addPaymentModal').modal('show');
+    });
+    
+
+});
+</script>
+{% endblock %}

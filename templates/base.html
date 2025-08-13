@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="{{ get_language() }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme Colors */
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --bg-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --sidebar-width: 280px;
+            --sidebar-width-mobile: 280px;
+        }
+
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --primary-light: #60a5fa;
+            --secondary-color: #94a3b8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --light-color: #1e293b;
+            --dark-color: #0f172a;
+            --border-color: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --bg-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Reset Bootstrap table styles */
+        .table,
+        .table tbody,
+        .table tbody tr,
+        .table tbody td {
+            background-color: initial;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Mobile Toggle Button */
+        .mobile-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--bg-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 18px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none;
+        }
+
+        .mobile-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .mobile-toggle-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-gradient);
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 16px 24px;
+            margin: 4px 16px;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(8px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: white;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover::before,
+        .sidebar .nav-link.active::before {
+            transform: scaleY(1);
+        }
+
+        /* Settings Section Styling */
+        .sidebar .nav-item.settings-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 24px;
+            padding-top: 16px;
+        }
+
+        .sidebar .nav-item.settings-section .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 8px 16px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .sidebar .nav-item.settings-section .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--border-radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-toggle-btn i {
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            background-color: var(--bg-secondary);
+            min-height: 100vh;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease, background-color 0.3s ease;
+            padding: 24px;
+            padding-top: 80px;
+            width: calc(100% - var(--sidebar-width));
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Header */
+        .page-header {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .page-header .btn-toolbar {
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Cards */
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
+            background: var(--bg-primary);
+            overflow: hidden;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card-body {
+            padding: 24px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: var(--bg-gradient);
+            color: white;
+            border-radius: var(--border-radius-lg);
+            padding: 28px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover::before {
+            transform: scale(1.1);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stats-card h3 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            line-height: 1;
+        }
+
+        .stats-card p {
+            margin: 0;
+            opacity: 0.9;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .stats-card i {
+            font-size: 24px;
+            opacity: 0.8;
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 500;
+            border-radius: var(--border-radius-sm);
+            padding: 12px 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background: var(--bg-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Tables */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
+            border: none;
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .table tbody td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            color: var(--text-primary) !important;
+            transition: border-color 0.3s ease;
+        }
+
+        .table tbody tr {
+            background-color: var(--bg-primary) !important;
+            transition: background-color 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: var(--bg-primary) !important;
+        }
+
+        .table tbody tr:nth-child(even):hover {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        /* Force table cell backgrounds */
+        .table tbody td {
+            background-color: inherit !important;
+        }
+
+        /* Override Bootstrap's default table styles */
+        .table {
+            background-color: transparent !important;
+        }
+
+        .table tbody {
+            background-color: transparent !important;
+        }
+
+        /* Bootstrap table variants for dark theme */
+        .table-primary {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-secondary {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-success {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-warning {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-danger {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-info {
+            background-color: rgba(6, 182, 212, 0.1) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-light {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table-dark {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Forms */
+        .form-control, .form-select {
+            border-radius: var(--border-radius-sm);
+            border: 2px solid var(--border-color);
+            padding: 14px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        /* Modals */
+        .modal-content {
+            border-radius: var(--border-radius-lg);
+            border: none;
+            box-shadow: var(--shadow-xl);
+            max-width: 100%;
+            box-sizing: border-box;
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-header {
+            background: var(--bg-gradient);
+            color: white;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            padding: 24px 32px;
+            border-bottom: none;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 32px;
+            max-width: 100%;
+            box-sizing: border-box;
+            color: var(--text-primary);
+        }
+
+        .modal-footer {
+            padding: 24px 32px;
+            border-top: 1px solid var(--border-color);
+            gap: 12px;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius-sm);
+            border: none;
+            padding: 16px 20px;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .alert-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            max-width: 400px;
+            min-width: 320px;
+        }
+        
+        .alert-container .alert {
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-lg);
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .input-group-text {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-right: none;
+            color: var(--text-secondary);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .mobile-toggle-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-width-mobile);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 80px;
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .page-header {
+                padding: 20px 24px;
+                margin-bottom: 24px;
+            }
+            
+            .page-header h1 {
+                font-size: 24px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .stats-card {
+                padding: 24px 20px;
+            }
+            
+            .stats-card h3 {
+                font-size: 28px;
+            }
+            
+            .main-content {
+                padding: 16px;
+                padding-top: 80px;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+        }
+
+        /* Additional breakpoint to ensure proper behavior between 768px-990px */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0) !important;
+            }
+        }
+
+        /* Debug: Force table styling to work */
+        .table,
+        .table tbody,
+        .table tbody tr,
+        .table tbody td {
+            background-color: var(--bg-primary) !important;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: var(--bg-primary) !important;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        /* Ensure table cells inherit row background */
+        .table tbody tr td {
+            background-color: inherit !important;
+        }
+
+        /* Force text colors for all Bootstrap components */
+        .table,
+        .table tbody,
+        .table tbody tr,
+        .table tbody td,
+        .table thead th {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override Bootstrap text colors */
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+
+        .text-success {
+            color: var(--success-color) !important;
+        }
+
+        .text-warning {
+            color: var(--warning-color) !important;
+        }
+
+        .text-danger {
+            color: var(--danger-color) !important;
+        }
+
+        .text-info {
+            color: var(--info-color) !important;
+        }
+
+        .text-light {
+            color: var(--text-secondary) !important;
+        }
+
+        .text-dark {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override Bootstrap background text colors */
+        .bg-primary {
+            color: white !important;
+        }
+
+        .bg-secondary {
+            color: var(--text-primary) !important;
+        }
+
+        .bg-success {
+            color: white !important;
+        }
+
+        .bg-warning {
+            color: var(--text-primary) !important;
+        }
+
+        .bg-danger {
+            color: white !important;
+        }
+
+        .bg-info {
+            color: var(--text-primary) !important;
+        }
+
+        .bg-light {
+            color: var(--text-primary) !important;
+        }
+
+        .bg-dark {
+            color: white !important;
+        }
+
+        /* Override form text colors */
+        .form-control,
+        .form-select,
+        .form-label,
+        .form-text {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override button text colors */
+        /* .btn {
+            color: inherit !important;
+        } */
+
+        .btn-outline-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .btn-outline-primary:hover {
+            color: white !important;
+        }
+
+        .btn-outline-secondary {
+            color: var(--text-secondary) !important;
+        }
+
+        .btn-outline-secondary:hover {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override alert text colors */
+        .alert {
+            color: var(--text-primary) !important;
+        }
+
+        .alert-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .alert-secondary {
+            color: var(--text-secondary) !important;
+        }
+
+        .alert-success {
+            color: var(--success-color) !important;
+        }
+
+        .alert-warning {
+            color: var(--warning-color) !important;
+        }
+
+        .alert-danger {
+            color: var(--danger-color) !important;
+        }
+
+        .alert-info {
+            color: var(--info-color) !important;
+        }
+
+        /* Override modal text colors */
+        .modal-content {
+            color: var(--text-primary) !important;
+        }
+
+        .modal-body {
+            color: var(--text-primary) !important;
+        }
+
+        .modal-footer {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override card text colors */
+        .card {
+            color: var(--text-primary) !important;
+        }
+
+        .card-body {
+            color: var(--text-primary) !important;
+        }
+
+        .card-header {
+            color: var(--text-primary) !important;
+        }
+
+        .card-footer {
+            color: var(--text-primary) !important;
+        }
+
+        /* Override list text colors */
+        .list-group-item {
+            color: var(--text-primary) !important;
+            background-color: var(--bg-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Override dropdown text colors */
+        .dropdown-menu {
+            background-color: var(--bg-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .dropdown-item {
+            color: var(--text-primary) !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Override pagination text colors */
+        .page-link {
+            color: var(--primary-color) !important;
+            background-color: var(--bg-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .page-link:hover {
+            color: var(--primary-color) !important;
+            background-color: var(--bg-secondary) !important;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        /* Loading States */
+        .spinner-border {
+            color: var(--primary-color);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Focus States */
+        .btn:focus,
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sidebar scrollbar styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Theme Transition */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Settings Modal Styles */
+        .settings-modal .modal-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-modal .modal-header {
+            background: var(--bg-gradient);
+            color: white;
+        }
+
+        .settings-modal .modal-body {
+            color: var(--text-primary);
+        }
+
+        .settings-modal .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-option:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary-color);
+        }
+
+        .theme-option .theme-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-option .theme-info i {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .theme-option .theme-details h6 {
+            margin: 0;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .theme-option .theme-details p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .theme-option .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle .form-check-input {
+            width: 48px;
+            height: 24px;
+            background-color: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .theme-toggle .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .theme-toggle .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* RTL Support for Urdu - Text Only */
+        html[lang="ur"] {
+            direction: rtl;
+        }
+
+        /* RTL Text Alignment for Specific Elements */
+        html[lang="ur"] .sidebar-nav .nav-link,
+        html[lang="ur"] .modal-body,
+        html[lang="ur"] .card-body,
+        html[lang="ur"] .form-label,
+        html[lang="ur"] .alert,
+        html[lang="ur"] .dropdown-menu,
+        html[lang="ur"] .table th,
+        html[lang="ur"] .table td,
+        html[lang="ur"] .btn,
+        html[lang="ur"] .input-group-text,
+        html[lang="ur"] .form-control,
+        html[lang="ur"] .form-select,
+        html[lang="ur"] .modal-title,
+        html[lang="ur"] .card-title,
+        html[lang="ur"] .page-title,
+        html[lang="ur"] .badge,
+        html[lang="ur"] .text-muted,
+        html[lang="ur"] .small,
+        html[lang="ur"] .list-group-item,
+        html[lang="ur"] .nav-link {
+            text-align: right;
+        }
+
+        /* Keep Layout Elements in LTR */
+        html[lang="ur"] .sidebar {
+            left: 0;
+            right: auto;
+            transform: translateX(0);
+        }
+        
+        html[lang="ur"] .sidebar.show {
+            transform: translateX(0);
+        }
+        
+        html[lang="ur"] .main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: 0;
+        }
+        
+        @media (max-width: 991.98px) {
+            html[lang="ur"] .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
+        html[lang="ur"] .mobile-toggle-btn {
+            left: 1rem;
+            right: auto;
+        }
+
+        /* Keep Form Elements in LTR Layout */
+        html[lang="ur"] .input-group > .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: var(--border-radius-sm);
+            border-bottom-left-radius: var(--border-radius-sm);
+        }
+        
+        html[lang="ur"] .input-group > .form-control:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: var(--border-radius-sm);
+            border-bottom-right-radius: var(--border-radius-sm);
+        }
+        
+        html[lang="ur"] .input-group > .input-group-text:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: var(--border-radius-sm);
+            border-bottom-left-radius: var(--border-radius-sm);
+        }
+        
+        html[lang="ur"] .input-group > .input-group-text:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: var(--border-radius-sm);
+            border-bottom-right-radius: var(--border-radius-sm);
+        }
+
+        /* Keep Button Groups in LTR Layout */
+        html[lang="ur"] .btn-group > .btn:not(:last-child):not(.dropdown-toggle) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: var(--border-radius-sm);
+            border-bottom-left-radius: var(--border-radius-sm);
+        }
+        
+        html[lang="ur"] .btn-group > .btn:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: var(--border-radius-sm);
+            border-bottom-right-radius: var(--border-radius-sm);
+        }
+
+        /* Keep Modal Close Button in LTR Position */
+        html[lang="ur"] .modal-header .btn-close {
+            margin: 0;
+            margin-left: auto;
+        }
+
+        /* Keep Alert Close Button in LTR Position */
+        html[lang="ur"] .alert-dismissible .btn-close {
+            left: auto;
+            right: 0;
+        }
+
+        /* Keep Dropdown Menu in LTR Position */
+        html[lang="ur"] .dropdown-menu {
+            left: auto;
+            right: 0;
+        }
+
+        /* Fix Language Selector Dropdown Arrow */
+        html[lang="ur"] .form-select {
+            background-position: left 0.75rem center;
+            padding-left: 2.5rem;
+            padding-right: 0.75rem;
+        }
+
+        /* Ensure dropdown arrow doesn't overlap text */
+        .form-select {
+            background-position: right 0.75rem center;
+            padding-right: 2.5rem;
+            padding-left: 0.75rem;
+        }
+
+        html[lang="ur"] .form-select {
+            background-position: left 0.75rem center;
+            padding-left: 2.5rem;
+            padding-right: 0.75rem;
+        }
+
+        /* Keep Icons and Numbers in LTR */
+        html[lang="ur"] .fas,
+        html[lang="ur"] .fa,
+        html[lang="ur"] .bi,
+        html[lang="ur"] .btn i,
+        html[lang="ur"] .nav-link i,
+        html[lang="ur"] .badge i {
+            direction: ltr;
+            unicode-bidi: bidi-override;
+        }
+
+        /* Keep Currency and Numbers in LTR */
+        html[lang="ur"] .currency,
+        html[lang="ur"] .number,
+        html[lang="ur"] .price,
+        html[lang="ur"] .amount {
+            direction: ltr;
+            unicode-bidi: bidi-override;
+        }
+
+        /* Fix Theme Toggle Switch */
+        html[lang="ur"] .form-check-input {
+            margin-right: 0;
+            margin-left: 0.5rem;
+        }
+
+        html[lang="ur"] .form-check-label {
+            text-align: left;
+            margin-right: 0.5rem;
+                margin-left: 0;
+            }
+
+        /* Ensure theme toggle text is properly aligned */
+        .form-check-input {
+            margin-left: 0;
+            margin-right: 0.5rem;
+        }
+
+        .form-check-label {
+            text-align: left;
+            margin-left: 0.5rem;
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle-btn" id="mobileToggleBtn" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="position-sticky pt-4">
+                    <div class="text-center mb-5">
+                        <div class="mb-3">
+                            <i class="fas fa-building fa-3x text-white opacity-75"></i>
+                    </div>
+                        <h4 class="text-white fw-bold mb-1">{{ t('app_name') }}</h4>
+                        <p class="text-white-50 small mb-0">{{ t('management_system') }}</p>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-chart-line"></i> {{ t('dashboard') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'customers' %}active{% endif %}" href="{{ url_for('customers') }}">
+                                <i class="fas fa-users"></i> {{ t('customers') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'products' %}active{% endif %}" href="{{ url_for('products') }}">
+                                <i class="fas fa-boxes"></i> {{ t('products') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'orders' %}active{% endif %}" href="{{ url_for('orders') }}">
+                                <i class="fas fa-shopping-cart"></i> {{ t('orders') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'payments' %}active{% endif %}" href="{{ url_for('payments') }}">
+                                <i class="fas fa-credit-card"></i> {{ t('payments') }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+                                <i class="fas fa-chart-bar"></i> {{ t('reports') }}
+                            </a>
+                        </li>
+                        
+                        <!-- Settings Section -->
+                        <li class="nav-item settings-section">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                                <i class="fas fa-cog"></i> {{ t('settings') }}
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-5">
+                            <a class="nav-link text-warning" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> {{ t('logout') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="main-content">
+                <div class="page-header">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
+                        <h1>{% block page_title %}{% endblock %}</h1>
+                        <div class="btn-toolbar">
+                        {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert container for dynamic alerts -->
+                <div class="alert-container" id="alertContainer"></div>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade settings-modal" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="theme-option">
+                        <div class="theme-info">
+                            <i class="fas fa-palette"></i>
+                            <div class="theme-details">
+                                <h6>{{ t('theme') }}</h6>
+                                <p>{{ t('choose_theme') }}</p>
+                            </div>
+                        </div>
+                        <div class="theme-toggle">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="themeToggle">
+                                <label class="form-check-label" for="themeToggle">
+                                    <span id="themeLabel">{{ t('theme') }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-option">
+                        <div class="theme-info">
+                            <i class="fas fa-globe"></i>
+                            <div class="theme-details">
+                                <h6>{{ t('language') }}</h6>
+                                <p>{{ t('choose_language') }}</p>
+                            </div>
+                        </div>
+                        <div class="language-toggle">
+                            <select class="form-select" id="languageSelect">
+                                {% for code, name in SUPPORTED_LANGUAGES.items() %}
+                                <option value="{{ code }}" {% if code == get_language() %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Future settings can be added here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Theme Management Script -->
+    <script>
+        // Theme management
+        class ThemeManager {
+            constructor() {
+                this.currentTheme = localStorage.getItem('theme') || 'light';
+                this.init();
+            }
+
+            init() {
+                this.applyTheme(this.currentTheme);
+                this.setupEventListeners();
+                this.updateUI();
+            }
+
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                this.currentTheme = theme;
+                localStorage.setItem('theme', theme);
+            }
+
+            toggleTheme() {
+                const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+                this.applyTheme(newTheme);
+                this.updateUI();
+            }
+
+            updateUI() {
+                const toggle = document.getElementById('themeToggle');
+                const label = document.getElementById('themeLabel');
+                
+                if (toggle) {
+                    toggle.checked = this.currentTheme === 'dark';
+                }
+                
+                if (label) {
+                    label.textContent = this.currentTheme === 'light' ? 'Light' : 'Dark';
+                }
+            }
+
+            setupEventListeners() {
+                const toggle = document.getElementById('themeToggle');
+                if (toggle) {
+                    toggle.addEventListener('change', () => {
+                        this.toggleTheme();
+                    });
+                }
+            }
+        }
+
+        // Initialize theme manager
+        const themeManager = new ThemeManager();
+        
+        // Language Manager
+        class LanguageManager {
+            constructor() {
+                this.languageSelect = document.getElementById('languageSelect');
+                this.init();
+            }
+            
+            init() {
+                if (this.languageSelect) {
+                    // Add event listener
+                    this.languageSelect.addEventListener('change', (e) => {
+                        const newLanguage = e.target.value;
+                        this.changeLanguage(newLanguage);
+                    });
+                }
+            }
+            
+            changeLanguage(language) {
+                $.ajax({
+                    url: '/api/language',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ language: language }),
+                    success: (response) => {
+                        if (response.success) {
+                            // Reload page to apply new language
+                            window.location.reload();
+                        } else {
+                            showAlert('error', 'Failed to change language');
+                        }
+                    },
+                    error: (xhr, status, error) => {
+                        showAlert('error', 'Network error while changing language');
+                    }
+                });
+            }
+        }
+        
+        // Initialize language manager
+        const languageManager = new LanguageManager();
+    </script>
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggleBtn = document.getElementById('mobileToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const body = document.body;
+
+            // Toggle sidebar function
+            function toggleSidebar() {
+                const isVisible = sidebar.classList.contains('show');
+                
+                if (isVisible) {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    body.style.overflow = '';
+                } else {
+                    sidebar.classList.add('show');
+                    sidebarOverlay.classList.add('show');
+                    body.style.overflow = 'hidden';
+                }
+                
+                // Debug logging
+                console.log('Sidebar toggled:', {
+                    isVisible: !isVisible,
+                    hasShowClass: sidebar.classList.contains('show'),
+                    transform: getComputedStyle(sidebar).transform,
+                    width: window.innerWidth
+                });
+            }
+
+            // Toggle button click
+            mobileToggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+                
+                // Change icon based on state
+                const icon = this.querySelector('i');
+                if (sidebar.classList.contains('show')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                toggleSidebar();
+                const icon = mobileToggleBtn.querySelector('i');
+                icon.className = 'fas fa-bars';
+            });
+
+            // Close sidebar when clicking on a nav link (mobile)
+            const navLinks = sidebar.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 991.98) {
+                        toggleSidebar();
+                        const icon = mobileToggleBtn.querySelector('i');
+                        icon.className = 'fas fa-bars';
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 991.98) {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    body.style.overflow = '';
+                    const icon = mobileToggleBtn.querySelector('i');
+                    icon.className = 'fas fa-bars';
+                }
+            });
+
+            // Close sidebar on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    toggleSidebar();
+                    const icon = mobileToggleBtn.querySelector('i');
+                    icon.className = 'fas fa-bars';
+                }
+            });
+
+            // Debug: Log initial state
+            console.log('Sidebar initialized:', {
+                width: window.innerWidth,
+                isMobile: window.innerWidth <= 991.98,
+                toggleButtonVisible: getComputedStyle(mobileToggleBtn).display !== 'none',
+                sidebarTransform: getComputedStyle(sidebar).transform
+            });
+        });
+    </script>
+    
+    <!-- Global alert function -->
+    <script>
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Add to container
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.parentNode.removeChild(alertDiv);
+                        }
+                    }, 150);
+                }
+            }, 5000);
+            
+            // Handle manual close
+            alertDiv.querySelector('.btn-close').addEventListener('click', () => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 150);
+            });
+        }
+        
+        // Global error handler for AJAX requests
+        $(document).ajaxError(function(event, xhr, settings, error) {
+            console.error('AJAX Error:', {
+                url: settings.url,
+                method: settings.method,
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
+            // Reset delete buttons on any AJAX error to prevent stuck states
+            if (settings.method === 'DELETE') {
+                window.resetDeleteButtons();
+            }
+            
+            // Show user-friendly error message for unexpected errors
+            if (xhr.status >= 500) {
+                showAlert('A server error occurred. Please try again later.', 'danger');
+            } else if (xhr.status === 0) {
+                showAlert('Network error. Please check your connection and try again.', 'danger');
+            }
+        });
+        
+        // Global error handler for JavaScript errors
+        window.addEventListener('error', function(event) {
+            console.error('JavaScript Error:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+            
+            // Show user-friendly error message
+            showAlert('An unexpected error occurred. Please refresh the page and try again.', 'danger');
+        });
+        
+        // Global function to reset all delete button states
+        window.resetDeleteButtons = function() {
+            // Reset customer delete button
+            const customerBtn = $('#confirmDeleteCustomerBtn');
+            if (customerBtn.length) {
+                customerBtn.prop('disabled', false);
+                customerBtn.html('<i class="fas fa-trash me-2"></i>Delete Customer');
+            }
+            
+            // Reset product delete button
+            const productBtn = $('#confirmDeleteProductBtn');
+            if (productBtn.length) {
+                productBtn.prop('disabled', false);
+                productBtn.html('<i class="fas fa-trash me-2"></i>Delete Product');
+            }
+            
+            // Reset order delete button
+            const orderBtn = $('#confirmDeleteOrderBtn');
+            if (orderBtn.length) {
+                orderBtn.prop('disabled', false);
+                orderBtn.html('<i class="fas fa-trash me-2"></i>Delete Order');
+            }
+        };
+        
+        // Reset delete buttons when page becomes visible (user switches tabs)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                window.resetDeleteButtons();
+            }
+        });
+        
+        // Reset delete buttons when window gains focus
+        window.addEventListener('focus', function() {
+            window.resetDeleteButtons();
+        });
+        
+        // Safety mechanism: Auto-reset delete buttons if they remain disabled for too long
+        setInterval(function() {
+            const disabledButtons = $('button:disabled').filter(function() {
+                return $(this).html().includes('fa-spinner fa-spin');
+            });
+            
+            if (disabledButtons.length > 0) {
+                console.warn('Found stuck delete buttons, resetting...');
+                window.resetDeleteButtons();
+            }
+        }, 10000); // Check every 10 seconds
+        
+        // Debug function to check button states (for troubleshooting)
+        window.debugButtonStates = function() {
+            console.log('=== Button State Debug ===');
+            
+            const customerBtn = $('#confirmDeleteCustomerBtn');
+            const productBtn = $('#confirmDeleteProductBtn');
+            const orderBtn = $('#confirmDeleteOrderBtn');
+            
+            if (customerBtn.length) {
+                console.log('Customer Delete Button:', {
+                    disabled: customerBtn.prop('disabled'),
+                    html: customerBtn.html(),
+                    visible: customerBtn.is(':visible')
+                });
+            }
+            
+            if (productBtn.length) {
+                console.log('Product Delete Button:', {
+                    disabled: productBtn.prop('disabled'),
+                    html: productBtn.html(),
+                    visible: productBtn.is(':visible')
+                });
+            }
+            
+            if (orderBtn.length) {
+                console.log('Order Delete Button:', {
+                    disabled: orderBtn.prop('disabled'),
+                    html: orderBtn.html(),
+                    visible: orderBtn.is(':visible')
+                });
+            }
+            
+            console.log('=== End Debug ===');
+        };
+    </script>
+    
+    <!-- Shared View Order Modal -->
+    <div class="modal fade" id="viewOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="viewOrderContent">
+                    <!-- Order details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

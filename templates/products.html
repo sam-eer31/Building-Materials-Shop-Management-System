@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('products') }} - {{ t('app_name') }}{% endblock %}
+{% block page_title %}{{ t('product_inventory_management') }}{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+    <i class="fas fa-plus me-2"></i>{{ t('add_product') }}
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="form-control" id="productSearch" placeholder="{{ t('search_products') }}">
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="productsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('price_per_unit') }}</th>
+                        <th>{{ t('stock_quantity') }}</th>
+                        <th>{{ t('unit') }}</th>
+                        <th>{{ t('status') }}</th>
+                        <th>{{ t('actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    {% if products %}
+                        {% for product in products %}
+                        <tr data-product-id="{{ product.id }}">
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>₹{{ "%.2f"|format(product.price) }}</td>
+                            <td>
+                                <span class="badge {% if product.stock_quantity < 10 %}bg-danger{% elif product.stock_quantity < 50 %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ product.stock_quantity }}
+                                </span>
+                            </td>
+                            <td>{{ product.unit }}</td>
+                            <td>
+                                {% if product.stock_quantity < 10 %}
+                                    <span class="badge bg-danger">{{ t('low_stock') }}</span>
+                                {% elif product.stock_quantity < 50 %}
+                                    <span class="badge bg-warning">{{ t('medium_stock') }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ t('in_stock') }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-product" 
+                                        data-product-id="{{ product.id }}"
+                                        data-product-name="{{ product.name }}"
+                                        data-product-price="{{ product.price }}"
+                                        data-product-stock="{{ product.stock_quantity }}"
+                                        data-product-unit="{{ product.unit }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-product" 
+                                        data-product-id="{{ product.id }}"
+                                        data-product-name="{{ product.name }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-boxes fa-3x mb-3"></i>
+                                    <p class="mb-0">{{ t('no_products_found') }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ t('add_new_product') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">{{ t('product_name') }} *</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productPrice" class="form-label">{{ t('price_per_unit') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="productPrice" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productStock" class="form-label">{{ t('stock_quantity') }} *</label>
+                        <input type="number" class="form-control" id="productStock" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productUnit" class="form-label">{{ t('unit') }}</label>
+                        <select class="form-select" id="productUnit">
+                            <option value="piece">Piece</option>
+                            <option value="bag">Bag</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="ton">Ton</option>
+                            <option value="truck">Truck Load</option>
+                            <option value="meter">Meter</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="saveProductBtn">
+                    <i class="fas fa-save me-2"></i>{{ t('save_product') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ t('edit_product') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProductForm">
+                    <input type="hidden" id="editProductId">
+                    <div class="mb-3">
+                        <label for="editProductName" class="form-label">{{ t('product_name') }} *</label>
+                        <input type="text" class="form-control" id="editProductName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editProductPrice" class="form-label">{{ t('price_per_unit') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="editProductPrice" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editProductStock" class="form-label">{{ t('stock_quantity') }} *</label>
+                        <input type="number" class="form-control" id="editProductStock" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editProductUnit" class="form-label">{{ t('unit') }}</label>
+                        <select class="form-select" id="editProductUnit">
+                            <option value="piece">Piece</option>
+                            <option value="bag">Bag</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="ton">Ton</option>
+                            <option value="truck">Truck Load</option>
+                            <option value="meter">Meter</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="updateProductBtn">
+                    <i class="fas fa-save me-2"></i>{{ t('update_product') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">{{ t('confirm_delete_product') }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ t('delete_product_warning') }}: <strong id="deleteProductName"></strong>?</p>
+                <div id="deleteProductWarning" class="alert alert-warning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This product has <span id="orderItemCount">0</span> order item(s). 
+                    Deleting the product will also delete all associated order items.
+                </div>
+                <p class="text-danger">This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteProductBtn">
+                    <i class="fas fa-trash me-2"></i>Delete Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    let products = [];
+    
+    // Load products on page load
+    loadProducts();
+    
+    // Search functionality
+    $('#productSearch').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        filterProducts(searchTerm);
+    });
+    
+    // Add product
+    $('#saveProductBtn').click(function() {
+        const productData = {
+            name: $('#productName').val().trim(),
+            price: parseFloat($('#productPrice').val()),
+            stock_quantity: parseInt($('#productStock').val()),
+            unit: $('#productUnit').val()
+        };
+        
+        if (!productData.name || isNaN(productData.price) || isNaN(productData.stock_quantity)) {
+            showAlert('Please fill in all required fields with valid values.', 'danger');
+            return;
+        }
+        
+        $.ajax({
+            url: '/api/products',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(productData),
+            success: function(response) {
+                showAlert('Product added successfully!', 'success');
+                $('#addProductModal').modal('hide');
+                $('#addProductForm')[0].reset();
+                loadProducts();
+            },
+            error: function(xhr) {
+                const error = xhr.responseJSON?.error || 'Failed to add product.';
+                showAlert(error, 'danger');
+            }
+        });
+    });
+    
+    // Edit product
+    $(document).on('click', '.edit-product', function() {
+        const productId = $(this).data('product-id');
+        const productName = $(this).data('product-name');
+        const productPrice = $(this).data('product-price');
+        const productStock = $(this).data('product-stock');
+        const productUnit = $(this).data('product-unit');
+        
+        $('#editProductId').val(productId);
+        $('#editProductName').val(productName);
+        $('#editProductPrice').val(productPrice);
+        $('#editProductStock').val(productStock);
+        $('#editProductUnit').val(productUnit);
+        
+        $('#editProductModal').modal('show');
+    });
+    
+    // Update product
+    $('#updateProductBtn').click(function() {
+        const productId = $('#editProductId').val();
+        const productData = {
+            name: $('#editProductName').val().trim(),
+            price: parseFloat($('#editProductPrice').val()),
+            stock_quantity: parseInt($('#editProductStock').val()),
+            unit: $('#editProductUnit').val()
+        };
+        
+        if (!productData.name || isNaN(productData.price) || isNaN(productData.stock_quantity)) {
+            showAlert('Please fill in all required fields with valid values.', 'danger');
+            return;
+        }
+        
+        $.ajax({
+            url: `/api/products/${productId}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(productData),
+            success: function(response) {
+                showAlert('Product updated successfully!', 'success');
+                $('#editProductModal').modal('hide');
+                loadProducts();
+            },
+            error: function(xhr) {
+                const error = xhr.responseJSON?.error || 'Failed to update product.';
+                showAlert(error, 'danger');
+            }
+        });
+    });
+    
+    // Delete product
+    $(document).on('click', '.delete-product', function() {
+        const productId = $(this).data('product-id');
+        const productName = $(this).data('product-name');
+        
+        // Reset any previous button states
+        $('#confirmDeleteProductBtn').prop('disabled', false);
+        $('#confirmDeleteProductBtn').html('<i class="fas fa-trash me-2"></i>Delete Product');
+        
+        $('#deleteProductName').text(productName);
+        
+        // Check if product has order items before showing modal
+        $.get(`/api/products/${productId}/check-orders`)
+            .done(function(data) {
+                if (data.order_item_count > 0) {
+                    $('#orderItemCount').text(data.order_item_count);
+                    $('#deleteProductWarning').show();
+                } else {
+                    $('#deleteProductWarning').hide();
+                }
+                $('#deleteProductModal').modal('show');
+                $('#confirmDeleteProductBtn').data('product-id', productId);
+            })
+            .fail(function() {
+                // If check fails, show modal without warning
+                $('#deleteProductWarning').hide();
+                $('#deleteProductModal').modal('show');
+                $('#confirmDeleteProductBtn').data('product-id', productId);
+            });
+    });
+    
+    // Confirm delete
+    $('#confirmDeleteProductBtn').click(function() {
+        const productId = $(this).data('product-id');
+        
+        // Disable button to prevent double-clicking
+        const $btn = $(this);
+        $btn.prop('disabled', true);
+        $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Deleting...');
+        
+        $.ajax({
+            url: `/api/products/${productId}`,
+            method: 'DELETE',
+            success: function(response) {
+                showAlert(response.message || 'Product deleted successfully!', 'success');
+                $('#deleteProductModal').modal('hide');
+                loadProducts();
+                
+                // Reset button state
+                $btn.prop('disabled', false);
+                $btn.html('<i class="fas fa-trash me-2"></i>Delete Product');
+            },
+            error: function(xhr) {
+                let errorMessage = 'Failed to delete product.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Server error occurred while deleting product. Please try again.';
+                } else if (xhr.status === 404) {
+                    errorMessage = 'Product not found. It may have been deleted already.';
+                }
+                showAlert(errorMessage, 'danger');
+                
+                // Re-enable button
+                $btn.prop('disabled', false);
+                $btn.html('<i class="fas fa-trash me-2"></i>Delete Product');
+            }
+        });
+    });
+    
+    // Reset button state when modal is hidden
+    $('#deleteProductModal').on('hidden.bs.modal', function() {
+        const $btn = $('#confirmDeleteProductBtn');
+        $btn.prop('disabled', false);
+        $btn.html('<i class="fas fa-trash me-2"></i>Delete Product');
+    });
+    
+    function loadProducts() {
+        $.get('/api/products')
+            .done(function(data) {
+                products = data;
+                renderProductsTable(data);
+            })
+            .fail(function() {
+                showAlert('Failed to load products.', 'danger');
+            });
+    }
+    
+    function renderProductsTable(productsData) {
+        if (productsData.length === 0) {
+            $('#productsTableBody').html(`
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-boxes fa-3x mb-3"></i>
+                            <p class="mb-0">{{ t('no_products_found') }}</p>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        productsData.forEach(product => {
+            const stockClass = product.stock_quantity < 10 ? 'bg-danger' : 
+                              product.stock_quantity < 50 ? 'bg-warning' : 'bg-success';
+            
+            const statusClass = product.stock_quantity < 10 ? 'bg-danger' : 
+                               product.stock_quantity < 50 ? 'bg-warning' : 'bg-success';
+            
+            const statusText = product.stock_quantity < 10 ? 'Low Stock' : 
+                              product.stock_quantity < 50 ? 'Medium Stock' : 'In Stock';
+            
+            html += `
+                <tr data-product-id="${product.id}">
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>₹${product.price.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${stockClass}">
+                            ${product.stock_quantity}
+                        </span>
+                    </td>
+                    <td>${product.unit}</td>
+                    <td>
+                        <span class="badge ${statusClass}">${statusText}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-product" 
+                                data-product-id="${product.id}"
+                                data-product-name="${product.name}"
+                                data-product-price="${product.price}"
+                                data-product-stock="${product.stock_quantity}"
+                                data-product-unit="${product.unit}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-product" 
+                                data-product-id="${product.id}"
+                                data-product-name="${product.name}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        $('#productsTableBody').html(html);
+    }
+    
+    function filterProducts(searchTerm) {
+        const filtered = products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm) ||
+            product.unit.toLowerCase().includes(searchTerm)
+        );
+        renderProductsTable(filtered);
+    }
+    
+
+});
+</script>
+{% endblock %}

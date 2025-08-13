@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('customer_management') }} - {{ t('app_name') }}{% endblock %}
+{% block page_title %}{{ t('customer_management') }}{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+    <i class="fas fa-plus me-2"></i>Add Customer
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="search-container fade-in">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="customerSearch" placeholder="{{ t('search_customers') }}">
+            </div>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <span class="text-muted small">
+                <i class="fas fa-info-circle me-1"></i>
+                {{ t('total_customers_count') }}: <span class="fw-bold" id="customerCount">{{ customers|length }}</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card slide-up">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-users text-primary me-3"></i>
+            <h5 class="mb-0 fw-bold">{{ t('customer_directory') }}</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" id="exportCustomers">
+                <i class="fas fa-download me-2"></i>{{ t('export') }}
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table mb-0" id="customersTable">
+                <thead>
+                    <tr>
+                        <th class="text-uppercase small fw-bold">ID</th>
+                        <th class="text-uppercase small fw-bold">{{ t('name') }}</th>
+                        <th class="text-uppercase small fw-bold">{{ t('phone') }}</th>
+                        <th class="text-uppercase small fw-bold">{{ t('address') }}</th>
+                        <th class="text-uppercase small fw-bold text-center">{{ t('actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                    {% if customers %}
+                        {% for customer in customers %}
+                        <tr data-customer-id="{{ customer.id }}" class="customer-row">
+                            <td class="fw-bold">#{{ customer.id }}</td>
+                            <td class="fw-medium">{{ customer.name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-phone text-muted me-2"></i>
+                                    <span>{{ customer.phone }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-muted" style="max-width: 200px;">
+                                    <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                    <span class="text-truncate d-inline-block">{{ customer.address }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary edit-customer" 
+                                            data-customer-id="{{ customer.id }}"
+                                            data-customer-name="{{ customer.name }}"
+                                            data-customer-phone="{{ customer.phone }}"
+                                            data-customer-address="{{ customer.address }}"
+                                            title="{{ t('edit_customer') }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-customer" 
+                                            data-customer-id="{{ customer.id }}"
+                                            data-customer-name="{{ customer.name }}"
+                                            title="Delete Customer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p class="mb-0">{{ t('no_customers_found') }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h6 class="text-muted mb-2">{{ t('no_customers_found') }}</h6>
+            <p class="text-muted small mb-0">{{ t('try_adjusting_search') }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>{{ t('add_new_customer') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="mb-4">
+                        <label for="customerName" class="form-label">{{ t('customer_name') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="customerName" required 
+                                   placeholder="Enter customer's full name">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="customerPhone" class="form-label">{{ t('phone_number') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="customerPhone" required 
+                                   placeholder="{{ t('enter_phone_number') }}">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="customerAddress" class="form-label">{{ t('address') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </span>
+                            <textarea class="form-control" id="customerAddress" rows="3" required 
+                                      placeholder="{{ t('enter_complete_address') }}"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="saveCustomerBtn">
+                                            <i class="fas fa-save me-2"></i>{{ t('save_customer') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                                                    <i class="fas fa-edit me-2"></i>{{ t('edit_customer') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCustomerForm">
+                    <input type="hidden" id="editCustomerId">
+                    <div class="mb-4">
+                        <label for="editCustomerName" class="form-label">{{ t('customer_name') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="editCustomerName" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editCustomerPhone" class="form-label">{{ t('phone_number') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="editCustomerPhone" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editCustomerAddress" class="form-label">{{ t('address') }} *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </span>
+                            <textarea class="form-control" id="editCustomerAddress" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="updateCustomerBtn">
+                                            <i class="fas fa-save me-2"></i>{{ t('update_customer') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ t('confirm_deletion') }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">{{ t('delete_customer_warning') }} <strong id="deleteCustomerName"></strong>?</p>
+                <p class="text-muted small mt-2 mb-0">{{ t('delete_warning') }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteCustomerBtn">
+                    <i class="fas fa-trash me-2"></i>{{ t('delete_customer') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Search functionality
+    $('#customerSearch').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        const rows = $('.customer-row');
+        let visibleCount = 0;
+        
+        rows.each(function() {
+            const name = $(this).find('td:eq(1)').text().toLowerCase();
+            const phone = $(this).find('td:eq(2)').text().toLowerCase();
+            const address = $(this).find('td:eq(3)').text().toLowerCase();
+            
+            if (name.includes(searchTerm) || phone.includes(searchTerm) || address.includes(searchTerm)) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        // Update customer count
+        $('#customerCount').text(visibleCount);
+        
+        // Show/hide empty state
+        if (visibleCount === 0) {
+            $('#emptyState').show();
+        } else {
+            $('#emptyState').hide();
+        }
+    });
+    
+    // Add customer functionality
+    $('#saveCustomerBtn').on('click', function() {
+        const name = $('#customerName').val().trim();
+        const phone = $('#customerPhone').val().trim();
+        const address = $('#customerAddress').val().trim();
+        
+        if (!name || !phone || !address) {
+            showAlert('{{ t("please_fill_required_fields") }}', 'warning');
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+        
+        $.ajax({
+            url: '/api/customers',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                name: name,
+                phone: phone,
+                address: address
+            }),
+            success: function(response) {
+                showAlert('{{ t("customer_added_successfully") }}', 'success');
+                $('#addCustomerModal').modal('hide');
+                $('#addCustomerForm')[0].reset();
+                
+                // Refresh the page to show new customer
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            },
+            error: function(xhr) {
+                let message = '{{ t("failed_to_add_customer") }}';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    message = xhr.responseJSON.error;
+                }
+                showAlert(message, 'danger');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+                btn.html(originalText);
+            }
+        });
+    });
+    
+    // Edit customer functionality
+    $('.edit-customer').on('click', function() {
+        const id = $(this).data('customer-id');
+        const name = $(this).data('customer-name');
+        const phone = $(this).data('customer-phone');
+        const address = $(this).data('customer-address');
+        
+        $('#editCustomerId').val(id);
+        $('#editCustomerName').val(name);
+        $('#editCustomerPhone').val(phone);
+        $('#editCustomerAddress').val(address);
+        
+        $('#editCustomerModal').modal('show');
+    });
+    
+    // Update customer functionality
+    $('#updateCustomerBtn').on('click', function() {
+        const id = $('#editCustomerId').val();
+        const name = $('#editCustomerName').val().trim();
+        const phone = $('#editCustomerPhone').val().trim();
+        const address = $('#editCustomerAddress').val().trim();
+        
+        if (!name || !phone || !address) {
+            showAlert('{{ t("please_fill_required_fields") }}', 'warning');
+            return;
+        }
+        
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
+        
+        $.ajax({
+            url: `/api/customers/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                name: name,
+                phone: phone,
+                address: address
+            }),
+            success: function(response) {
+                showAlert('{{ t("customer_updated_successfully") }}', 'success');
+                $('#editCustomerModal').modal('hide');
+                
+                // Update the row in the table
+                const row = $(`tr[data-customer-id="${id}"]`);
+                row.find('td:eq(1)').text(name);
+                row.find('td:eq(2)').html(`<div class="d-flex align-items-center"><i class="fas fa-phone text-muted me-2"></i><span>${phone}</span></div>`);
+                row.find('td:eq(3)').html(`<div class="text-muted" style="max-width: 200px;"><i class="fas fa-map-marker-alt text-muted me-2"></i><span class="text-truncate d-inline-block">${address}</span></div>`);
+                
+                // Update data attributes
+                row.find('.edit-customer').data({
+                    'customer-name': name,
+                    'customer-phone': phone,
+                    'customer-address': address
+                });
+            },
+            error: function(xhr) {
+                let message = '{{ t("failed_to_update_customer") }}';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    message = xhr.responseJSON.error;
+                }
+                showAlert(message, 'danger');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+                btn.html(originalText);
+            }
+        });
+    });
+    
+    // Delete customer functionality
+    $('.delete-customer').on('click', function() {
+        const id = $(this).data('customer-id');
+        const name = $(this).data('customer-name');
+        
+        $('#deleteCustomerName').text(name);
+        $('#deleteCustomerModal').modal('show');
+        
+        // Store the customer ID for deletion
+        $('#confirmDeleteCustomerBtn').data('customer-id', id);
+    });
+    
+    // Confirm delete
+    $('#confirmDeleteCustomerBtn').on('click', function() {
+        const id = $(this).data('customer-id');
+        const btn = $(this);
+        const originalText = btn.html();
+        
+        btn.prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Deleting...');
+        
+        $.ajax({
+            url: `/api/customers/${id}`,
+            method: 'DELETE',
+            success: function(response) {
+                showAlert('{{ t("customer_deleted_successfully") }}', 'success');
+                $('#deleteCustomerModal').modal('hide');
+                
+                // Remove the row from the table
+                $(`tr[data-customer-id="${id}"]`).fadeOut(300, function() {
+                    $(this).remove();
+                    
+                    // Update customer count
+                    const newCount = $('.customer-row:visible').length;
+                    $('#customerCount').text(newCount);
+                    
+                    // Show empty state if no customers
+                    if (newCount === 0) {
+                        $('#emptyState').show();
+                    }
+                });
+            },
+            error: function(xhr) {
+                let message = '{{ t("failed_to_delete_customer") }}';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    message = xhr.responseJSON.error;
+                }
+                showAlert(message, 'danger');
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+                btn.html(originalText);
+            }
+        });
+    });
+    
+    // Export functionality
+    $('#exportCustomers').on('click', function() {
+        const visibleRows = $('.customer-row:visible');
+        let csvContent = "data:text/csv;charset=utf-8,";
+                        csvContent += "ID,{{ t('name') }},{{ t('phone') }},{{ t('address') }}\n";
+        
+        visibleRows.each(function() {
+            const id = $(this).find('td:eq(0)').text();
+            const name = $(this).find('td:eq(1)').text();
+            const phone = $(this).find('td:eq(2)').text().replace(/\s+/g, ' ').trim();
+            const address = $(this).find('td:eq(3)').text().replace(/\s+/g, ' ').trim();
+            
+            csvContent += `${id},${name},${phone},${address}\n`;
+        });
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "customers.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showAlert('Customer data exported successfully!', 'success');
+    });
+    
+    // Reset form when modal is closed
+    $('#addCustomerModal').on('hidden.bs.modal', function() {
+        $('#addCustomerForm')[0].reset();
+    });
+    
+    // Form validation
+    $('#addCustomerForm, #editCustomerForm').on('submit', function(e) {
+        e.preventDefault();
+        return false;
+    });
+});
+</script>
+{% endblock %}
