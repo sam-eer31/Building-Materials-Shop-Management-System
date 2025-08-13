@@ -45,22 +45,66 @@ A comprehensive, modern web-based management system designed specifically for bu
 
 ## 🚀 Quick Start
 
+### Setup (Recommended)
+**⚠️ IMPORTANT**: You must install and set up MySQL BEFORE using the automated setup.
+
+**For Windows users**: 
+1. **Install MySQL** (see Database Setup section below)
+2. **Set up the database** using the provided schema (see Database Setup section below)
+3. **Double-click the `start.bat` file** to automatically:
+   - Create virtual environment
+   - Install all dependencies
+   - Launch the application
+
+**For other platforms**: Follow the manual installation steps below.
+
+### Manual Installation
+
 ### Prerequisites
-- Python 3.8 or higher
-- MySQL 8.0 or higher
+- **Python 3.8 or higher** - Download from [python.org](https://python.org)
+- **MySQL 8.0 or higher** - Download from [mysql.com](https://mysql.com) or use XAMPP/WAMP
+
+### Database Setup
+**Important**: You must set up the MySQL database before running the application.
+
+#### Step 1: Install MySQL
+- **Windows**: Download MySQL Installer from [mysql.com](https://dev.mysql.com/downloads/installer/)
+- **macOS**: Use Homebrew: `brew install mysql`
+- **Linux**: `sudo apt-get install mysql-server` (Ubuntu/Debian) or `sudo yum install mysql-server` (CentOS/RHEL)
+
+#### Step 2: Start MySQL Service
+- **Windows**: MySQL service should start automatically after installation
+- **macOS**: `brew services start mysql`
+- **Linux**: `sudo systemctl start mysql`
+
+#### Step 3: Create Database and Tables
+Run the provided schema file:
+```bash
+mysql -u your_username -p < schema.sql
+```
+Or manually execute the SQL commands in `schema.sql` file.
+
+#### Step 4: Update Database Credentials
+Edit `config.py` and update the database connection:
+```python
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://your_username:your_password@localhost/building_materials_shop'
+```
+Replace `your_username` and `your_password` with your actual MySQL credentials.
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/building-materials-shop.git
-   cd building-materials-shop
+   git clone https://github.com/sam-eer31/Building-Materials-Shop-Management-System
+   cd Building-Materials-Shop-Management-System
    ```
 
 2. **Configure the application**
    - Edit `config.py` to update database connection details
-   - Update the `SQLALCHEMY_DATABASE_URI` with your MySQL credentials
-   - Ensure your MySQL user has CREATE DATABASE privileges
+   - Update the `SQLALCHEMY_DATABASE_URI` with your MySQL credentials:
+     ```python
+     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://your_username:your_password@localhost/building_materials_shop'
+     ```
 
 3. **Install dependencies**
    ```bash
@@ -71,7 +115,7 @@ A comprehensive, modern web-based management system designed specifically for bu
    ```bash
    python app.py
    ```
-   The application will automatically create the database, all necessary tables, a default admin user, and insert sample data.
+   The application will connect to the database, create any missing tables, and automatically create a default admin user if it doesn't exist.
 
 5. **Access the application**
    - Open your browser and go to `http://localhost:5000`
@@ -79,55 +123,15 @@ A comprehensive, modern web-based management system designed specifically for bu
      - **Username**: `admin`
      - **Password**: `admin123`
 
-## 🗄️ Database Management
-
-### Automatic Initialization
-When you start the application for the first time, it automatically:
-- **Creates the database** if it doesn't exist (MySQL/SQLite)
-- Creates all database tables
-- Creates a default admin user (username: `admin`, password: `admin123`)
-- Inserts sample data including:
-  - 8 sample products (Portland Cement, Red Bricks, River Sand, etc.)
-  - 3 sample customers (ABC Construction, XYZ Builders, City Developers)
-
-### Manual Database Operations
-You can also manually manage the database using these endpoints:
-
-- **Create Database**: `GET /create-database` - Creates the database if it doesn't exist
-- **Recreate Database**: `GET /recreate-db` - Drops all tables and recreates them with sample data
-- **Insert Sample Data**: `GET /insert-sample-data` - Adds sample data to existing database
-- **Create Admin User**: `GET /create-admin` - Creates default admin user
-
-### Sample Data Included
-The system comes with realistic sample data for a building materials shop:
-
-**Products:**
-- Portland Cement: ₹350/bag (100 bags in stock)
-- Red Bricks: ₹12/piece (5000 pieces in stock)
-- River Sand: ₹1200/truck (20 trucks in stock)
-- Steel Rods 12mm: ₹450/piece (200 pieces in stock)
-- Steel Rods 16mm: ₹650/piece (150 pieces in stock)
-- Crushed Stone: ₹800/truck (15 trucks in stock)
-- White Cement: ₹450/bag (50 bags in stock)
-- Concrete Blocks: ₹25/piece (1000 pieces in stock)
-
-**Customers:**
-- ABC Construction: 0123456789
-- XYZ Builders: 0987654321
-- City Developers: 0555666777
-
-### Windows Quick Start
-For Windows users, simply double-click the `start.bat` file to automatically set up and run the application.
-
 ## 📁 Project Structure
 
 ```
-building-materials-shop/
+Building-Materials-Shop-Management-System/
 ├── app.py                 # Main Flask application
 ├── config.py             # Configuration settings
 ├── requirements.txt      # Python dependencies
-├── schema.sql           # Database schema
-├── start.bat            # Windows startup script
+├── schema.sql           # Complete database schema with sample data
+├── start.bat            # Windows startup script (auto-setup)
 ├── templates/           # HTML templates
 │   ├── base.html        # Base template with navigation
 │   ├── dashboard.html   # Dashboard page
@@ -151,6 +155,13 @@ The system uses a relational database with the following main entities:
 - **Order Items**: Individual items within orders
 - **Payments**: Payment tracking and history
 
+### Sample Data
+The `schema.sql` file includes:
+- Sample products (cement, bricks, sand, steel rods, etc.)
+- Sample customers (construction companies)
+
+**Note**: The default admin user (username: `admin`, password: `admin123`) is automatically created when you first run the application.
+
 ## 🎛️ Configuration
 
 ### Environment Variables
@@ -163,16 +174,6 @@ Update the database connection in `config.py`:
 ```python
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://username:password@localhost/building_materials_shop'
 ```
-
-**Supported Databases:**
-- **MySQL/MariaDB**: The application will automatically create the database if it doesn't exist
-- **SQLite**: Database file will be created automatically
-- **PostgreSQL**: Manual database creation required
-
-**Database Requirements:**
-- MySQL 5.7+ or MariaDB 10.2+
-- UTF8MB4 character set support
-- User must have CREATE DATABASE privileges
 
 ## 🔧 API Endpoints
 
@@ -288,16 +289,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/yourusername/building-materials-shop/issues) page
+1. Check the [Issues](https://github.com/sam-eer31/Building-Materials-Shop-Management-System/issues) page
 2. Create a new issue with detailed information
 3. Include error messages and steps to reproduce
 
-## 🔄 Version History
 
-- **v1.0.0** - Initial release with core features
-- **v1.1.0** - Added multi-language support
-- **v1.2.0** - Enhanced reporting and analytics
-- **v1.3.0** - Improved UI/UX and mobile responsiveness
 
 ---
 
